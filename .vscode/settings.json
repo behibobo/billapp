@@ -1,0 +1,12 @@
+{
+    "sqltools.connections": [
+        {
+            "askForPassword": true,
+            "database": "./todo.db",
+            "dialect": "SQLite",
+            "name": "bills"
+        }
+    ],
+    "sqltools.useNodeRuntime": true,
+    "python.pythonPath": "env/bin/python3.7"
+}

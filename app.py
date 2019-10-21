@@ -1,6 +1,6 @@
 import helper
-
-from flask import Flask, request, Response
+import pandas as pd
+from flask import Flask, request, Response, jsonify
 from flask_cors import CORS, cross_origin
 
 import json
@@ -8,92 +8,63 @@ import json
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
+
 @app.route('/')
 def hello_world():
-   return 'Hello World!'
+    return 'Hello World!'
 
-@app.route('/item/new', methods = ['POST'])
+
+@app.route("/upload", methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+      print(request.files['file'])
+      f = request.files['file']
+      data_xls = pd.read_excel(f, sheet_name="Export Worksheet",
+      converters={'SHOMARE_PARDAKHT':str, 'SHOMARE_BADANE':str,'SHOMARE_GABZ':str,'SHOMARE_ESHTERAK':str,'MABLAGHE_GABELE_PARDAKHT':str,'MOHLATE_PARDAKHT':str,'NAME':str,})
+      for index, row in data_xls.iterrows():
+        helper.add_item(row)
+         
+    return '''
+    <!doctype html>
+    <title>Upload an excel file</title>
+    <h1>Excel file upload (csv, tsv, csvz, tsvz only)</h1>
+    <form action="" method=post enctype=multipart/form-data><p>
+    <input type=file name=file><input type=submit value=Upload>
+    </form>
+    '''
+
+
+@app.route('/bill/get', methods=['POST'])
 @cross_origin()
 def add_item():
-       
-   #Get item from the POST body
-   req_data = request.get_json()
-   item = req_data['item']
-   
-   #Add item to the list
-   res_data = helper.add_to_list(item)
 
-   #Return error if item not added
-   if res_data is None:
-      response = Response("{'error': 'Item not added - '}"  + item, status=400 , mimetype='application/json')
-      return response
-   
-   #Return response
-   response = Response(json.dumps(res_data), mimetype='application/json')
-   
-   return response
+    req_data = request.get_json()
+    print(req_data)
+    bill_serial = req_data['bill_serial']
+    payment_serial = req_data['payment_serial']
 
-@app.route('/items/all')
-def get_all_items():
-   # Get items from the helper
-   res_data = helper.get_all_items()
-   #Return response
-   response = Response(json.dumps(res_data), mimetype='application/json')
-   return response
+    # Add item to the list
+    bill = helper.get_bill(bill_serial, payment_serial)
+    print(bill)
+    # Return error if item not added
+    if bill is None:
+        response = Response("{'error': 'Item not added - '}" , status=400, mimetype='application/json')
+        return response
 
-@app.route('/item/<int:id>', methods=['GET'])
-def get_item(id):
-   #Get parameter from the URL
-   item_id = id
-   
-   # Get items from the helper
-   item = helper.get_item(id)
-   
-   #Return 404 if item not found
-   if item is None:
-      response = Response("{'error': 'Item Not Found - '}"  + item_id, status=404 , mimetype='application/json')
-      return response
+    # Return response
+    data = {
+        "customer_serial": bill[1],
+        "bill_serial": bill[2],
+        "payment_serial": bill[3],
+        "amount": bill[4],
+        "customer": bill[5],
+        "valid_to": bill[6],
+        "chasis_serial": bill[7],
+    }
+    response = Response(json.dumps(data), mimetype='application/json')
 
-   #Return status
-   res_data = {
-      'id': item[0],
-      'task': item[1],
-      'status': item[2]
-   }
-
-   response = Response(json.dumps(res_data), status=200, mimetype='application/json')
-   return response
-
-@app.route('/item/<int:id>', methods = ['PUT'])
-@cross_origin()
-def update_status(id):
-   #Get item from the POST body
-   req_data = request.get_json()
-   task = req_data['task']
-   
-   #Update item in the list
-   res_data = helper.update_status(id, task)
-   if res_data is None:
-      response = Response("{'error': 'Error updating item'}", status=400 , mimetype='application/json')
-      return response
-   
-   #Return response
-   response = Response(json.dumps(res_data), mimetype='application/json')
-   
-   return response
-
-@app.route('/item/<int:id>', methods = ['DELETE'])
-def delete_item(id):
-   res_data = helper.delete_item(id)
-   if res_data is None:
-      response = Response("{'error': 'Error deleting item' }", status=400 , mimetype='application/json')
-      return response
-   
-   #Return response
-   response = Response(json.dumps(res_data), mimetype='application/json')
-   
-   return response
+    return response
 
 
 if __name__ == "__main__":
-   app.run()
+    app.run()
