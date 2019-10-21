@@ -33,10 +33,21 @@ def upload_file():
     </form>
     '''
 
+@app.route('/bills', methods=['GET'])
+@cross_origin()
+def get_items():
+    bills = helper.get_all_bills()
+    if bills is None:
+        response = Response("{'error': 'Item not added - '}" , status=400, mimetype='application/json')
+        return response
+
+    response = Response(json.dumps(bills), mimetype='application/json')
+
+    return response
 
 @app.route('/bill/get', methods=['POST'])
 @cross_origin()
-def add_item():
+def get_bill():
 
     req_data = request.get_json()
     print(req_data)

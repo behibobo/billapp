@@ -24,3 +24,14 @@ def get_bill(bill_serial, payment_serial):
     except Exception as e:
         print('Error: ', e)
         return None
+
+def get_all_bills():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("select * from bills")
+        result = c.fetchall()
+        return result
+    except Exception as e:
+        print('Error: ', e)
+        return None
