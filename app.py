@@ -68,8 +68,8 @@ def get_bill():
         "bill_serial": bill[2],
         "payment_serial": bill[3],
         "amount": bill[4],
-        "customer": bill[5],
-        "valid_to": bill[6],
+        "customer": bill[6],
+        "valid_to": bill[5],
         "chasis_serial": bill[7],
     }
     response = Response(json.dumps(data), mimetype='application/json')
