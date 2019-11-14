@@ -14,11 +14,11 @@ def add_item(row):
         print('Error: ', e)
         return None
 
-def get_bill(bill_serial, payment_serial):
+def get_bill(bill_serial):
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
-        c.execute("select * from bills where bill_serial='%s' and payment_serial = '%s'" %(bill_serial, payment_serial))
+        c.execute("select * from bills where bill_serial='%s' or customer_serial = '%s'" %(bill_serial, bill_serial))
         result = c.fetchone()
         return result
     except Exception as e:

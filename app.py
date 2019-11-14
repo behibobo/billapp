@@ -52,10 +52,9 @@ def get_bill():
     req_data = request.get_json()
     print(req_data)
     bill_serial = req_data['bill_serial']
-    payment_serial = req_data['payment_serial']
 
     # Add item to the list
-    bill = helper.get_bill(bill_serial, payment_serial)
+    bill = helper.get_bill(bill_serial)
     print(bill)
     # Return error if item not added
     if bill is None:
